@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
 fun AppAndroidPreview() {
     App()
 }
-@androidx.compose.runtime.Composable
+@Composable
 fun Prueba() {
     androidx.compose.foundation.layout.Column {
         androidx.compose.material3.Text(

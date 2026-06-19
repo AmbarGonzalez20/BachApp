@@ -1,9 +1,11 @@
 package com.example.bachapp
 
 class Greeting {
-    private val platform = getPlatform()
-
-    fun greet(): String {
-        return sayHello(platform.name)
+    suspend fun obtenerMensajeBackend(): String {
+        return try {
+            ApiClient.obtenerMensaje()
+        } catch (e: Exception) {
+            "Error de conexión: ${e.message}"
+        }
     }
 }

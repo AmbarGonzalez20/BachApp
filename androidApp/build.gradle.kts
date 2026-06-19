@@ -18,6 +18,9 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+
+    implementation(libs.compose.material3)
+    implementation(libs.compose.foundation)
 }
 
 android {
