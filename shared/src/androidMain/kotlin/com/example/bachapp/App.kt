@@ -1,15 +1,25 @@
 package com.example.bachapp
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 
 @Composable
 fun App() {
-    var pantallaActual by remember { mutableStateOf("lista") }
+    var pantallaActual by remember { mutableStateOf("login") }
     var bacheIdSeleccionado by remember { mutableStateOf(0) }
-    val scope = rememberCoroutineScope()
+    var rolUsuario by remember { mutableStateOf("") }
 
     when (pantallaActual) {
+        "login" -> PantallaLogin(
+            onLoginExitoso = { rol ->
+                rolUsuario = rol
+                pantallaActual = if (rol == "administrador") "admin" else "lista"
+            },
+            onIrARegistro = { pantallaActual = "registro" }
+        )
+        "registro" -> PantallaRegistro(
+            onRegistroExitoso = { pantallaActual = "login" },
+            onIrALogin = { pantallaActual = "login" }
+        )
         "lista" -> PantallaLista(
             onReportar = { pantallaActual = "reporte" },
             onVerDetalle = { id ->
@@ -23,6 +33,9 @@ fun App() {
         "detalle" -> PantallaDetalle(
             bacheId = bacheIdSeleccionado,
             onVolver = { pantallaActual = "lista" }
+        )
+        "admin" -> PantallaAdmin(
+            onCerrarSesion = { pantallaActual = "login" }
         )
     }
 }
