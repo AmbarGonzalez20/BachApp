@@ -8,6 +8,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import io.ktor.client.request.put
 
 object ApiClient {
 
@@ -49,4 +50,11 @@ object ApiClient {
             contentType(ContentType.Application.Json)
             setBody(LoginRequest(email = email, password = password))
         }.body()
+
+    suspend fun actualizarEstado(id: Int, estado: String) {
+        client.put("$BASE_URL/api/baches/$id/estado") {
+            contentType(ContentType.Application.Json)
+            setBody(ActualizarEstadoRequest(estado = estado))
+        }
+    }
 }
