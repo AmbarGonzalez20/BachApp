@@ -27,11 +27,14 @@ fun PantallaReporte(
     var cargando by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var exito by remember { mutableStateOf(false) }
+
     var mostrarCamara by remember { mutableStateOf(false) }
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
-    val scope = rememberCoroutineScope()
+
     var latitud by remember { mutableStateOf(0.0) }
     var longitud by remember { mutableStateOf(0.0) }
+
+    val scope = rememberCoroutineScope()
 
     if (mostrarCamara) {
         PantallaCamara(
@@ -39,7 +42,9 @@ fun PantallaReporte(
                 fotoUri = uri
                 mostrarCamara = false
             },
-            onCancelar = { mostrarCamara = false }
+            onCancelar = {
+                mostrarCamara = false
+            }
         )
         return
     }
@@ -50,78 +55,87 @@ fun PantallaReporte(
                 title = {
                     Text(
                         text = "Reportar Bache",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     TextButton(onClick = onVolver) {
-                        Text(text = "‹", color = Color.White, fontSize = 28.sp)
+                        Text(
+                            text = "‹",
+                            color = Color.White,
+                            fontSize = 28.sp
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AzulClaro,
+                    containerColor = AzulOscuro,
                     titleContentColor = Color.White
                 )
             )
         },
         containerColor = FondoPantalla
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(18.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Encabezado
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = AzulClaro)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = AzulClaro
+                )
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
+                    modifier = Modifier.padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "🕳️", fontSize = 48.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Nuevo Reporte",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Color.White
+                        text = "🕳️",
+                        fontSize = 50.sp
                     )
+
+                    Text(
+                        text = "Nuevo reporte",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AzulOscuro
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     Text(
                         text = "Ayuda a mejorar las calles de tu ciudad",
-                        fontSize = 13.sp,
-                        color = Color(0xFFE3F2FD)
+                        fontSize = 14.sp,
+                        color = Color.DarkGray
                     )
                 }
             }
 
-            // Foto
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(6.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+
                     Text(
-                        text = "Foto del bache",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                        color = Color(0xFF333333)
+                        text = "📷 Foto del bache",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AzulOscuro
                     )
 
                     if (fotoUri != null) {
@@ -130,34 +144,36 @@ fun PantallaReporte(
                             contentDescription = "Foto del bache",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(12.dp)),
+                                .height(210.dp)
+                                .clip(RoundedCornerShape(18.dp)),
                             contentScale = ContentScale.Crop
                         )
+
                         OutlinedButton(
-                            onClick = { mostrarCamara = true },
+                            onClick = {
+                                mostrarCamara = true
+                            },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = CafeBoton
-                            )
+                            shape = RoundedCornerShape(14.dp)
                         ) {
-                            Text("📷 Tomar otra foto")
+                            Text("Tomar otra foto")
                         }
+
                     } else {
                         Button(
-                            onClick = { mostrarCamara = true },
+                            onClick = {
+                                mostrarCamara = true
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(12.dp),
+                                .height(54.dp),
+                            shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CafeBoton
+                                containerColor = VerdeBoton
                             )
                         ) {
                             Text(
                                 text = "📷 Tomar foto",
-                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
@@ -166,137 +182,154 @@ fun PantallaReporte(
                 }
             }
 
-            // Descripcion
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(6.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+
                     Text(
-                        text = "Descripcion del bache",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                        color = Color(0xFF333333)
+                        text = "📍 Ubicación del bache",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AzulOscuro
                     )
-                    // GPS
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+
+                    BotonObtenerUbicacion(
+                        onUbicacionObtenida = { lat, lon ->
+                            latitud = lat
+                            longitud = lon
+                        }
+                    )
+
+                    if (latitud != 0.0 || longitud != 0.0) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE8F5E9)
+                            )
                         ) {
-                            Text(
-                                text = "Ubicacion del bache",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 15.sp,
-                                color = Color(0xFF333333)
-                            )
-
-                            BotonObtenerUbicacion(
-                                onUbicacionObtenida = { lat, lon ->
-                                    latitud = lat
-                                    longitud = lon
-                                }
-                            )
-
-                            if (latitud != 0.0 || longitud != 0.0) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFFE8F5E9)
-                                    )
-                                ) {
-                                    Column(modifier = Modifier.padding(10.dp)) {
-                                        Text(
-                                            text = "✅ Ubicacion obtenida",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp,
-                                            color = Color(0xFF2E7D32)
-                                        )
-                                        Text(
-                                            text = "Lat: $latitud",
-                                            fontSize = 12.sp,
-                                            color = Color(0xFF555555)
-                                        )
-                                        Text(
-                                            text = "Lon: $longitud",
-                                            fontSize = 12.sp,
-                                            color = Color(0xFF555555)
-                                        )
-                                    }
-                                }
+                            Column(
+                                modifier = Modifier.padding(12.dp)
+                            ) {
+                                Text(
+                                    text = "✅ Ubicación obtenida",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32)
+                                )
+                                Text("Latitud: $latitud")
+                                Text("Longitud: $longitud")
                             }
                         }
                     }
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(6.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    Text(
+                        text = "📝 Descripción",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AzulOscuro
+                    )
+
                     OutlinedTextField(
                         value = descripcion,
-                        onValueChange = { descripcion = it },
-                        placeholder = { Text("Describe la ubicacion y el estado del bache...") },
+                        onValueChange = {
+                            descripcion = it
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 4,
-                        shape = RoundedCornerShape(12.dp),
+                        placeholder = {
+                            Text("Describe el bache, calle o referencia...")
+                        },
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AzulClaro,
-                            unfocusedBorderColor = Color(0xFFCCCCCC)
+                            focusedBorderColor = AzulOscuro,
+                            unfocusedBorderColor = Color.LightGray
                         )
                     )
                 }
             }
 
-            // Error
             if (error.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFEBEE)
+                    )
                 ) {
                     Text(
                         text = "⚠️ $error",
                         color = Color(0xFFB71C1C),
-                        modifier = Modifier.padding(12.dp),
-                        fontSize = 14.sp
+                        modifier = Modifier.padding(14.dp)
                     )
                 }
             }
 
-            // Exito
             if (exito) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFE8F5E9)
+                    )
                 ) {
                     Text(
                         text = "✅ Bache reportado exitosamente",
                         color = Color(0xFF2E7D32),
-                        modifier = Modifier.padding(12.dp),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        modifier = Modifier.padding(14.dp),
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Botones
             if (cargando) {
-                CircularProgressIndicator(color = AzulClaro)
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = AzulOscuro
+                    )
+                }
             } else {
                 Button(
                     onClick = {
                         when {
-                            descripcion.isBlank() -> error = "La descripcion es obligatoria"
+                            descripcion.isBlank() -> {
+                                error = "La descripción es obligatoria"
+                            }
+
+                            latitud == 0.0 && longitud == 0.0 -> {
+                                error = "Debes obtener la ubicación del bache"
+                            }
+
                             else -> {
                                 error = ""
                                 cargando = true
+
                                 scope.launch {
                                     try {
                                         ApiClient.crearBache(
@@ -307,10 +340,14 @@ fun PantallaReporte(
                                                 fotoUrl = fotoUri?.toString() ?: ""
                                             )
                                         )
+
                                         exito = true
                                         cargando = false
                                         descripcion = ""
                                         fotoUri = null
+                                        latitud = 0.0
+                                        longitud = 0.0
+
                                     } catch (e: Exception) {
                                         error = "Error al enviar: ${e.message}"
                                         cargando = false
@@ -321,39 +358,38 @@ fun PantallaReporte(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
+                        .height(58.dp),
+                    shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CafeBoton
+                        containerColor = VerdeBoton
                     )
                 ) {
                     Text(
-                        text = "📤 Enviar Reporte",
-                        fontSize = 16.sp,
+                        text = "📤 Enviar reporte",
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
                     onClick = onVolver,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = CafeBoton
-                    )
+                        .height(55.dp),
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Text(
-                        text = "📋 Ver reportes creados",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "📋 Ver reportes",
+                        fontWeight = FontWeight.Bold,
+                        color = AzulOscuro
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

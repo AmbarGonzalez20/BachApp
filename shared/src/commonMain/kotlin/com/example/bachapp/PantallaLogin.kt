@@ -1,5 +1,7 @@
 package com.example.bachapp
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,17 +11,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.painterResource
+import bachapp.shared.generated.resources.Res
+import bachapp.shared.generated.resources.login_banner
 
-val AzulClaro = Color(0xFF90CAF9)
+val AzulClaro = Color(0xFFE3F2FD)
 val AzulOscuro = Color(0xFF1565C0)
+val VerdeBoton = Color(0xFF43A047)
 val CafeBoton = Color(0xFF66BB6A)
-val FondoPantalla = Color(0xFFF0F4FF)
+val FondoPantalla = Color(0xFFF5F7FA)
 
 @Composable
 fun PantallaLogin(
@@ -28,173 +37,219 @@ fun PantallaLogin(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var mostrarPassword by remember { mutableStateOf(false) }
     var cargando by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
 
-    Scaffold(containerColor = FondoPantalla) { padding ->
+    Scaffold(
+        containerColor = FondoPantalla
+    ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
 
-            // Logo
+            Image(
+                painter = painterResource(Res.drawable.login_banner),
+                contentDescription = "Imagen principal BachApp",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(
+                        RoundedCornerShape(
+                            bottomStart = 30.dp,
+                            bottomEnd = 30.dp
+                        )
+                    ),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
             Card(
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 22.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = AzulClaro)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🕳️", fontSize = 48.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "BachApp",
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                color = AzulOscuro
-            )
-            Text(
-                text = "Sistema de reporte ciudadano",
-                fontSize = 14.sp,
-                color = Color(0xFF888888)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Formulario
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     Text(
-                        text = "Iniciar sesion",
+                        text = "Iniciar sesión",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
                         color = AzulOscuro
                     )
 
+                    Spacer(modifier = Modifier.height(22.dp))
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Correo electronico") },
-                        placeholder = { Text("ejemplo@correo.com") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        shape = RoundedCornerShape(16.dp),
+                        label = { Text("Correo electrónico") },
+                        leadingIcon = {
+                            Text(text = "📧", fontSize = 20.sp)
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email
+                        ),
+                        singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AzulClaro,
-                            unfocusedBorderColor = Color(0xFFCCCCCC)
+                            focusedBorderColor = AzulOscuro,
+                            unfocusedBorderColor = Color.LightGray
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Contrasena") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        shape = RoundedCornerShape(16.dp),
+                        label = { Text("Contraseña") },
+                        leadingIcon = {
+                            Text(text = "🔒", fontSize = 20.sp)
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = if (mostrarPassword) "🙈" else "👁️",
+                                fontSize = 18.sp,
+                                modifier = Modifier.clickable {
+                                    mostrarPassword = !mostrarPassword
+                                }
+                            )
+                        },
+                        visualTransformation =
+                            if (mostrarPassword) VisualTransformation.None
+                            else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password
+                        ),
+                        singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AzulClaro,
-                            unfocusedBorderColor = Color(0xFFCCCCCC)
+                            focusedBorderColor = AzulOscuro,
+                            unfocusedBorderColor = Color.LightGray
                         )
                     )
 
                     if (error.isNotEmpty()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
-                        ) {
-                            Text(
-                                text = "⚠️ $error",
-                                color = Color(0xFFB71C1C),
-                                modifier = Modifier.padding(10.dp),
-                                fontSize = 13.sp
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "⚠️ $error",
+                            color = Color.Red,
+                            fontSize = 13.sp
+                        )
                     }
 
+                    Spacer(modifier = Modifier.height(22.dp))
                     if (cargando) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = AzulClaro)
-                        }
+
+                        CircularProgressIndicator(
+                            color = AzulOscuro
+                        )
+
                     } else {
+
                         Button(
                             onClick = {
+
                                 when {
-                                    email.isBlank() -> error = "El correo es obligatorio"
-                                    password.isBlank() -> error = "La contrasena es obligatoria"
+
+                                    email.isBlank() -> {
+                                        error = "El correo es obligatorio"
+                                    }
+
+                                    password.isBlank() -> {
+                                        error = "La contraseña es obligatoria"
+                                    }
+
                                     else -> {
+
                                         error = ""
                                         cargando = true
-                                        if (email == "admin@bachapp.com" && password == "admin123") {
+
+                                        if (
+                                            email == "admin@bachapp.com" &&
+                                            password == "admin123"
+                                        ) {
+
                                             onLoginExitoso("administrador")
-                                        } else if (email.isNotEmpty() && password.length >= 6) {
+
+                                        } else if (password.length >= 6) {
+
                                             onLoginExitoso("ciudadano")
+
                                         } else {
+
                                             error = "Credenciales incorrectas"
                                             cargando = false
                                         }
                                     }
                                 }
                             },
+
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(14.dp),
+                                .height(56.dp),
+
+                            shape = RoundedCornerShape(16.dp),
+
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CafeBoton
+                                containerColor = VerdeBoton
                             )
+
                         ) {
+
                             Text(
-                                text = "Iniciar sesion",
+                                text = "Iniciar sesión",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = "¿No tienes cuenta?",
+                            color = Color.Gray
+                        )
+
+                        Spacer(modifier = Modifier.width(5.dp))
+
+                        Text(
+                            text = "Regístrate",
+                            color = VerdeBoton,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                onIrARegistro()
+                            }
+                        )
+
+                    }
+
                 }
+
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "¿No tienes cuenta?",
-                    color = Color(0xFF888888),
-                    fontSize = 14.sp
-                )
-                TextButton(onClick = onIrARegistro) {
-                    Text(
-                        text = "Registrate",
-                        color = CafeBoton,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(30.dp))
+
         }
+
     }
 }
