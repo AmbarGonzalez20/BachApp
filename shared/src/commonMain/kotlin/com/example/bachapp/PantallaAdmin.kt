@@ -139,14 +139,14 @@ fun PantallaAdmin(
                 CardEstadistica(
                     modifier = Modifier.weight(1f),
                     titulo = "Pendientes",
-                    valor = "${baches.count { it.fechaReporte.isEmpty() }}",
+                    valor = "${baches.count { it.estado == "pendiente" }}",
                     emoji = "⏳",
                     color = Color(0xFFE65100)
                 )
                 CardEstadistica(
                     modifier = Modifier.weight(1f),
                     titulo = "Resueltos",
-                    valor = "${baches.count { it.fechaReporte.isNotEmpty() }}",
+                    valor = "${baches.count { it.estado == "resuelto" }}",
                     emoji = "✅",
                     color = Color(0xFF2E7D32)
                 )
@@ -194,6 +194,16 @@ fun PantallaAdmin(
                             onEliminar = {
                                 bacheAEliminar = bache
                                 mostrarDialogo = true
+                            },
+                            onCambiarEstado = { nuevoEstado ->
+                                scope.launch {
+                                    try {
+                                        ApiClient.actualizarEstado(bache.id, nuevoEstado)
+                                        cargarBaches()
+                                    } catch (e: Exception) {
+                                        error = "Error al actualizar: ${e.message}"
+                                    }
+                                }
                             }
                         )
                     }
@@ -242,8 +252,23 @@ fun CardEstadistica(
 @Composable
 fun CardBacheAdmin(
     bache: Bache,
-    onEliminar: () -> Unit
+    onEliminar: () -> Unit,
+    onCambiarEstado: (String) -> Unit
 ) {
+    val colorEstado = when (bache.estado) {
+        "pendiente" -> Color(0xFFFF8A65)
+        "en proceso" -> Color(0xFFFFD54F)
+        "resuelto" -> Color(0xFF66BB6A)
+        else -> Color(0xFF888888)
+    }
+
+    val emojiEstado = when (bache.estado) {
+        "pendiente" -> "⏳"
+        "en proceso" -> "🔧"
+        "resuelto" -> "✅"
+        else -> "❓"
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -279,19 +304,88 @@ fun CardBacheAdmin(
                         maxLines = 2
                     )
                 }
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = colorEstado.copy(alpha = 0.2f)
+                    )
+                ) {
+                    Text(
+                        text = "$emojiEstado ${bache.estado}",
+                        fontSize = 11.sp,
+                        color = colorEstado,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            OutlinedButton(
-                onClick = onEliminar,
+            Text(
+                text = "Cambiar estado:",
+                fontSize = 12.sp,
+                color = Color(0xFF888888),
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFB71C1C)
-                )
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(text = "🗑️ Eliminar", fontSize = 13.sp)
+                OutlinedButton(
+                    onClick = { onCambiarEstado("pendiente") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFFF8A65),
+                        containerColor = if (bache.estado == "pendiente")
+                            Color(0xFFFF8A65).copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+                ) {
+                    Text(text = "⏳", fontSize = 12.sp)
+                }
+
+                OutlinedButton(
+                    onClick = { onCambiarEstado("en proceso") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFFFD54F),
+                        containerColor = if (bache.estado == "en proceso")
+                            Color(0xFFFFD54F).copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+                ) {
+                    Text(text = "🔧", fontSize = 12.sp)
+                }
+
+                OutlinedButton(
+                    onClick = { onCambiarEstado("resuelto") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF66BB6A),
+                        containerColor = if (bache.estado == "resuelto")
+                            Color(0xFF66BB6A).copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+                ) {
+                    Text(text = "✅", fontSize = 12.sp)
+                }
+
+                OutlinedButton(
+                    onClick = onEliminar,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFB71C1C)
+                    )
+                ) {
+                    Text(text = "🗑️", fontSize = 12.sp)
+                }
             }
         }
     }
