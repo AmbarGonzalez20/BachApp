@@ -26,6 +26,7 @@ fun PantallaAdmin(
     var error by remember { mutableStateOf("") }
     var mostrarDialogo by remember { mutableStateOf(false) }
     var bacheAEliminar by remember { mutableStateOf<Bache?>(null) }
+    var bacheIdSeleccionado by remember { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
 
     fun cargarBaches() {
@@ -42,6 +43,20 @@ fun PantallaAdmin(
 
     LaunchedEffect(Unit) {
         cargarBaches()
+    }
+
+    // Navegar al detalle
+    if (bacheIdSeleccionado != null) {
+        PantallaDetalleAdmin(
+            bacheId = bacheIdSeleccionado!!,
+            onVolver = {
+                bacheIdSeleccionado = null
+                scope.launch {
+                    baches = ApiClient.obtenerBaches()
+                }
+            }
+        )
+        return
     }
 
     if (mostrarDialogo && bacheAEliminar != null) {
@@ -96,7 +111,7 @@ fun PantallaAdmin(
             TopAppBar(
                 title = {
                     Text(
-                        text = "👑 Panel Admin",
+                        text = " Panel Admin",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -124,7 +139,6 @@ fun PantallaAdmin(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Estadisticas
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -141,14 +155,14 @@ fun PantallaAdmin(
                     titulo = "Pendientes",
                     valor = "${baches.count { it.estado == "pendiente" }}",
                     emoji = "⏳",
-                    color = Color(0xFFE65100)
+                    color = Color(0xFFFFB300)
                 )
                 CardEstadistica(
                     modifier = Modifier.weight(1f),
                     titulo = "Resueltos",
                     valor = "${baches.count { it.estado == "resuelto" }}",
                     emoji = "✅",
-                    color = Color(0xFF2E7D32)
+                    color = Color(0xFF66BB6A)
                 )
             }
 
@@ -191,19 +205,10 @@ fun PantallaAdmin(
                     items(baches) { bache ->
                         CardBacheAdmin(
                             bache = bache,
+                            onVerDetalle = { bacheIdSeleccionado = bache.id },
                             onEliminar = {
                                 bacheAEliminar = bache
                                 mostrarDialogo = true
-                            },
-                            onCambiarEstado = { nuevoEstado ->
-                                scope.launch {
-                                    try {
-                                        ApiClient.actualizarEstado(bache.id, nuevoEstado)
-                                        cargarBaches()
-                                    } catch (e: Exception) {
-                                        error = "Error al actualizar: ${e.message}"
-                                    }
-                                }
                             }
                         )
                     }
@@ -252,139 +257,82 @@ fun CardEstadistica(
 @Composable
 fun CardBacheAdmin(
     bache: Bache,
-    onEliminar: () -> Unit,
-    onCambiarEstado: (String) -> Unit
+    onVerDetalle: () -> Unit,
+    onEliminar: () -> Unit
 ) {
     val colorEstado = when (bache.estado) {
-        "pendiente" -> Color(0xFFFF8A65)
-        "en proceso" -> Color(0xFFFFD54F)
+        "pendiente" -> Color(0xFFFFB300)
+        "en proceso" -> Color(0xFF42A5F5)
         "resuelto" -> Color(0xFF66BB6A)
         else -> Color(0xFF888888)
     }
 
-    val emojiEstado = when (bache.estado) {
-        "pendiente" -> "⏳"
-        "en proceso" -> "🔧"
-        "resuelto" -> "✅"
-        else -> "❓"
+    val textoEstado = when (bache.estado) {
+        "pendiente" -> "⏳ Pendiente"
+        "en proceso" -> "🔧 En proceso"
+        "resuelto" -> "✅ Resuelto"
+        else -> "Desconocido"
     }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        onClick = onVerDetalle
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(AzulClaro.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(AzulClaro.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🕳️", fontSize = 20.sp)
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Bache #${bache.id}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = AzulOscuro
-                    )
-                    Text(
-                        text = bache.descripcion,
-                        fontSize = 13.sp,
-                        color = Color(0xFF555555),
-                        maxLines = 2
-                    )
-                }
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colorEstado.copy(alpha = 0.2f)
-                    )
-                ) {
-                    Text(
-                        text = "$emojiEstado ${bache.estado}",
-                        fontSize = 11.sp,
-                        color = colorEstado,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+                Text(text = "🕳️", fontSize = 22.sp)
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            Text(
-                text = "Cambiar estado:",
-                fontSize = 12.sp,
-                color = Color(0xFF888888),
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.height(6.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Bache #${bache.id}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = AzulOscuro
+                )
+                Text(
+                    text = bache.descripcion,
+                    fontSize = 13.sp,
+                    color = Color(0xFF555555),
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = textoEstado,
+                    fontSize = 12.sp,
+                    color = colorEstado,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { onCambiarEstado("pendiente") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFFF8A65),
-                        containerColor = if (bache.estado == "pendiente")
-                            Color(0xFFFF8A65).copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
-                ) {
-                    Text(text = "⏳", fontSize = 12.sp)
-                }
-
-                OutlinedButton(
-                    onClick = { onCambiarEstado("en proceso") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFFFD54F),
-                        containerColor = if (bache.estado == "en proceso")
-                            Color(0xFFFFD54F).copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
-                ) {
-                    Text(text = "🔧", fontSize = 12.sp)
-                }
-
-                OutlinedButton(
-                    onClick = { onCambiarEstado("resuelto") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF66BB6A),
-                        containerColor = if (bache.estado == "resuelto")
-                            Color(0xFF66BB6A).copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
-                ) {
-                    Text(text = "✅", fontSize = 12.sp)
-                }
-
+            Column(horizontalAlignment = Alignment.End) {
+                Text(text = "›", fontSize = 24.sp, color = AzulClaro)
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onEliminar,
-                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color(0xFFB71C1C)
-                    )
+                    ),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(text = "🗑️", fontSize = 12.sp)
+                    Text(text = "🗑️", fontSize = 14.sp)
                 }
             }
         }

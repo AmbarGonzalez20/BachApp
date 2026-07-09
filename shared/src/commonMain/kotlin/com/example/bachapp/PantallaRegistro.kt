@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 @Composable
 fun PantallaRegistro(
@@ -28,6 +29,7 @@ fun PantallaRegistro(
     var cargando by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
     var exito by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -203,8 +205,25 @@ fun PantallaRegistro(
                             else -> {
                                 error = ""
                                 cargando = true
-                                exito = true
-                                cargando = false
+                                scope.launch {
+                                    try {
+                                        ApiClient.registrarUsuario(
+                                            Usuario(
+                                                nombre = nombre,
+                                                email = email,
+                                                password = password,
+                                                rol = "ciudadano"
+                                            )
+                                        )
+                                        exito = true
+                                        cargando = false
+                                        kotlinx.coroutines.delay(1500)
+                                        onRegistroExitoso()
+                                    } catch (e: Exception) {
+                                        error = "Error al registrar: ${e.message}"
+                                        cargando = false
+                                    }
+                                }
                             }
                         }
                     },

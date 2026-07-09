@@ -29,8 +29,7 @@ fun PantallaLista(
         try {
             baches = ApiClient.obtenerBaches()
         } catch (e: Exception) {
-            error = ""
-            baches = emptyList()
+            error = "Error: ${e.message}"
         }
         cargando = false
     }
@@ -72,6 +71,13 @@ fun PantallaLista(
             if (cargando) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = AzulClaro)
+                }
+                if (error.isNotEmpty()) {
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             } else if (baches.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
