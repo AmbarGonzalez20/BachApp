@@ -118,7 +118,7 @@ fun PantallaRegistro(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Correo electronico") },
+                        label = { Text("Correo electrónico") },
                         placeholder = { Text("ejemplo@correo.com") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -132,7 +132,7 @@ fun PantallaRegistro(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Contrasena") },
+                        label = { Text("Contraseña") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         visualTransformation = PasswordVisualTransformation(),
@@ -146,7 +146,7 @@ fun PantallaRegistro(
                     OutlinedTextField(
                         value = confirmarPassword,
                         onValueChange = { confirmarPassword = it },
-                        label = { Text("Confirmar contrasena") },
+                        label = { Text("Confirmar contraseña") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         visualTransformation = PasswordVisualTransformation(),
@@ -254,7 +254,7 @@ fun PantallaRegistro(
                     )
                 ) {
                     Text(
-                        text = "¿Ya tienes cuenta? Inicia sesion",
+                        text = "¿Ya tienes cuenta? Inicia sesión",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )

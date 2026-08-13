@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Assignment
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Construction
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.PriorityHigh
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
@@ -98,7 +100,9 @@ private enum class VistaAdmin {
     TODOS,
     PENDIENTES,
     EN_PROCESO,
-    RESUELTOS
+    RESUELTOS,
+    ESTADISTICAS,
+    MAPA
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +127,10 @@ fun PantallaAdmin(
     }
 
     var bacheIdSeleccionado by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    var bacheIdAResolver by remember {
         mutableStateOf<Int?>(null)
     }
 
@@ -157,12 +165,30 @@ fun PantallaAdmin(
         cargarBaches()
     }
 
+    if (bacheIdAResolver != null) {
+        PantallaResolverBache(
+            bacheId = bacheIdAResolver!!,
+            onVolver = {
+                bacheIdAResolver = null
+            },
+            onResolucionExitosa = {
+                bacheIdAResolver = null
+                bacheIdSeleccionado = null
+                cargarBaches()
+            }
+        )
+        return
+    }
+
     if (bacheIdSeleccionado != null) {
         PantallaDetalleAdmin(
             bacheId = bacheIdSeleccionado!!,
             onVolver = {
                 bacheIdSeleccionado = null
                 cargarBaches()
+            },
+            onResolverBache = { id ->
+                bacheIdAResolver = id
             }
         )
         return
@@ -385,8 +411,47 @@ fun PantallaAdmin(
                     },
                     onReportesRegistrados = {
                         vistaActual = VistaAdmin.TODOS
+                    },
+                    onEstadisticas = {
+                        vistaActual = VistaAdmin.ESTADISTICAS
+                    },
+                    onMapa = {
+                        vistaActual = VistaAdmin.MAPA
                     }
                 )
+            }
+
+            VistaAdmin.ESTADISTICAS -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    PantallaEstadisticasAdmin(
+                        totalReportes = baches.size,
+                        pendientes = totalPendientes,
+                        enProceso = totalEnProceso,
+                        resueltos = totalResueltos,
+                        reportesEnZonaPrioritaria = zonasPrioritarias,
+                        prioridadMaxima = prioridadMaxima
+                    )
+                }
+            }
+
+            VistaAdmin.MAPA -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    PantallaMapaAdmin(
+                        baches = baches,
+                        conteoCercania = conteoCercania,
+                        onVerDetalle = { id ->
+                            bacheIdSeleccionado = id
+                        }
+                    )
+                }
             }
 
             else -> {
@@ -432,7 +497,9 @@ private fun PantallaPrincipalAdmin(
     onPendientes: () -> Unit,
     onEnProceso: () -> Unit,
     onResueltos: () -> Unit,
-    onReportesRegistrados: () -> Unit
+    onReportesRegistrados: () -> Unit,
+    onEstadisticas: () -> Unit,
+    onMapa: () -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -557,6 +624,98 @@ private fun PantallaPrincipalAdmin(
                     fontWeight = FontWeight.ExtraBold
                 )
             }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                BotonAccesoAdmin(
+                    modifier = Modifier.weight(1f),
+                    titulo = "Estadísticas",
+                    descripcion = "Gráficas y prioridades",
+                    icono = Icons.Outlined.BarChart,
+                    onClick = onEstadisticas
+                )
+
+                BotonAccesoAdmin(
+                    modifier = Modifier.weight(1f),
+                    titulo = "Mapa de reportes",
+                    descripcion = "Ubicación y estados",
+                    icono = Icons.Outlined.Map,
+                    onClick = onMapa
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BotonAccesoAdmin(
+    modifier: Modifier,
+    titulo: String,
+    descripcion: String,
+    icono: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = GrisBordeAdmin
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(45.dp)
+                    .background(
+                        color = AzulProcesoClaroAdmin,
+                        shape = RoundedCornerShape(13.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icono,
+                    contentDescription = null,
+                    tint = AzulBarraAdmin
+                )
+            }
+
+            Spacer(modifier = Modifier.height(9.dp))
+
+            Text(
+                text = titulo,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = NegroAdmin,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(3.dp))
+
+            Text(
+                text = descripcion,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 11.sp,
+                color = GrisAdmin,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -1234,6 +1393,8 @@ private fun tituloVistaAdmin(
         VistaAdmin.PENDIENTES -> "Reportes pendientes"
         VistaAdmin.EN_PROCESO -> "Reportes en proceso"
         VistaAdmin.RESUELTOS -> "Reportes resueltos"
+        VistaAdmin.ESTADISTICAS -> "Estadísticas"
+        VistaAdmin.MAPA -> "Mapa de reportes"
         else -> "Reportes registrados"
     }
 }

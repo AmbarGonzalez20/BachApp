@@ -51,12 +51,31 @@ object ApiClient {
     suspend fun crearBache(
         bache: Bache
     ): Bache {
-        return client
-            .post("$BASE_URL/api/baches") {
-                contentType(ContentType.Application.Json)
-                setBody(bache)
-            }
-            .body()
+        val respuesta = client.post(
+            "$BASE_URL/api/baches"
+        ) {
+            contentType(ContentType.Application.Json)
+            setBody(
+                CrearBacheRequest(
+                    descripcion = bache.descripcion,
+                    latitud = bache.latitud,
+                    longitud = bache.longitud,
+                    fotoUrl = bache.fotoUrl,
+                    usuarioId = bache.usuarioId
+                )
+            )
+        }
+
+        if (respuesta.status.value !in 200..299) {
+            val detalle = respuesta.bodyAsText()
+
+            throw IllegalStateException(
+                "No se pudo registrar el bache. " +
+                        "Código ${respuesta.status.value}. $detalle"
+            )
+        }
+
+        return respuesta.body()
     }
 
     suspend fun obtenerBachePorId(
@@ -156,6 +175,7 @@ object ApiClient {
             )
         }
     }
+
 
     suspend fun subirFoto(
         bytes: ByteArray,
