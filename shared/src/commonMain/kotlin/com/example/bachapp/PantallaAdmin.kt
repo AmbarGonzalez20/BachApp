@@ -30,7 +30,6 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Logout
-import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.PriorityHigh
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
@@ -101,8 +100,7 @@ private enum class VistaAdmin {
     PENDIENTES,
     EN_PROCESO,
     RESUELTOS,
-    ESTADISTICAS,
-    MAPA
+    ESTADISTICAS
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -414,9 +412,6 @@ fun PantallaAdmin(
                     },
                     onEstadisticas = {
                         vistaActual = VistaAdmin.ESTADISTICAS
-                    },
-                    onMapa = {
-                        vistaActual = VistaAdmin.MAPA
                     }
                 )
             }
@@ -434,22 +429,6 @@ fun PantallaAdmin(
                         resueltos = totalResueltos,
                         reportesEnZonaPrioritaria = zonasPrioritarias,
                         prioridadMaxima = prioridadMaxima
-                    )
-                }
-            }
-
-            VistaAdmin.MAPA -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    PantallaMapaAdmin(
-                        baches = baches,
-                        conteoCercania = conteoCercania,
-                        onVerDetalle = { id ->
-                            bacheIdSeleccionado = id
-                        }
                     )
                 }
             }
@@ -498,8 +477,7 @@ private fun PantallaPrincipalAdmin(
     onEnProceso: () -> Unit,
     onResueltos: () -> Unit,
     onReportesRegistrados: () -> Unit,
-    onEstadisticas: () -> Unit,
-    onMapa: () -> Unit
+    onEstadisticas: () -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -626,27 +604,18 @@ private fun PantallaPrincipalAdmin(
             }
         }
 
+        /*
+         * El mapa fue retirado.
+         * Estadísticas ocupa ahora todo el ancho disponible.
+         */
         item {
-            Row(
+            BotonAccesoAdmin(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                BotonAccesoAdmin(
-                    modifier = Modifier.weight(1f),
-                    titulo = "Estadísticas",
-                    descripcion = "Gráficas y prioridades",
-                    icono = Icons.Outlined.BarChart,
-                    onClick = onEstadisticas
-                )
-
-                BotonAccesoAdmin(
-                    modifier = Modifier.weight(1f),
-                    titulo = "Mapa de reportes",
-                    descripcion = "Ubicación y estados",
-                    icono = Icons.Outlined.Map,
-                    onClick = onMapa
-                )
-            }
+                titulo = "Estadísticas",
+                descripcion = "Gráficas y prioridades",
+                icono = Icons.Outlined.BarChart,
+                onClick = onEstadisticas
+            )
         }
     }
 }
@@ -1394,7 +1363,6 @@ private fun tituloVistaAdmin(
         VistaAdmin.EN_PROCESO -> "Reportes en proceso"
         VistaAdmin.RESUELTOS -> "Reportes resueltos"
         VistaAdmin.ESTADISTICAS -> "Estadísticas"
-        VistaAdmin.MAPA -> "Mapa de reportes"
         else -> "Reportes registrados"
     }
 }

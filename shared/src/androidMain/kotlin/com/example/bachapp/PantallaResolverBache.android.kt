@@ -64,9 +64,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 private val FondoResolver = Color(0xFFF5F6F8)
 private val AmarilloResolver = Color(0xFFFFC107)
@@ -114,37 +111,52 @@ actual fun PantallaResolverBache(
 
     LaunchedEffect(bacheId) {
         try {
-            reporte = ApiClient.obtenerBachePorId(bacheId)
-        } catch (_: Exception) {
-            // La resolución puede continuar aunque no se cargue la vista previa.
+            reporte =
+                ApiClient.obtenerBachePorId(
+                    bacheId
+                )
+        } catch (e: Exception) {
+            error =
+                "No fue posible cargar el reporte: " +
+                    (e.message ?: "Error desconocido")
         }
     }
 
-    fun solicitarCamara() {
+    fun abrirCamara() {
         mostrarCamara = true
         error = ""
     }
 
-    val permisoCamaraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { concedido ->
-        if (concedido) {
-            solicitarCamara()
-        } else {
-            error = "Se necesita permiso de cámara para guardar la evidencia."
+    val permisoCamaraLauncher =
+        rememberLauncherForActivityResult(
+            contract =
+                ActivityResultContracts
+                    .RequestPermission()
+        ) { concedido ->
+
+            if (concedido) {
+                abrirCamara()
+            } else {
+                error =
+                    "Se necesita permiso de cámara " +
+                        "para guardar la evidencia."
+            }
         }
-    }
 
     fun abrirCamaraConPermiso() {
-        val concedido = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
+        val tienePermiso =
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) ==
+                PackageManager.PERMISSION_GRANTED
 
-        if (concedido) {
-            solicitarCamara()
+        if (tienePermiso) {
+            abrirCamara()
         } else {
-            permisoCamaraLauncher.launch(Manifest.permission.CAMERA)
+            permisoCamaraLauncher.launch(
+                Manifest.permission.CAMERA
+            )
         }
     }
 
@@ -159,6 +171,7 @@ actual fun PantallaResolverBache(
                 mostrarCamara = false
             }
         )
+
         return
     }
 
@@ -168,8 +181,10 @@ actual fun PantallaResolverBache(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Resolver reporte",
-                        fontWeight = FontWeight.Bold
+                        text =
+                            "Resolver reporte",
+                        fontWeight =
+                            FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -178,106 +193,165 @@ actual fun PantallaResolverBache(
                         enabled = !guardando
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "Regresar",
-                            tint = NegroResolver
+                            imageVector =
+                                Icons.Outlined
+                                    .ArrowBack,
+                            contentDescription =
+                                "Regresar",
+                            tint =
+                                NegroResolver
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AmarilloResolver,
-                    titleContentColor = NegroResolver
-                )
+                colors =
+                    TopAppBarDefaults
+                        .topAppBarColors(
+                            containerColor =
+                                AmarilloResolver,
+                            titleContentColor =
+                                NegroResolver
+                        )
             )
         }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .navigationBarsPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = VerdeClaroResolver
+                .verticalScroll(
+                    rememberScrollState()
                 )
+                .padding(16.dp),
+            verticalArrangement =
+                Arrangement.spacedBy(16.dp)
+        ) {
+
+            Card(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            VerdeClaroResolver
+                    )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp)
+                    modifier =
+                        Modifier.padding(18.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment =
+                            Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = VerdeResolver
+                            imageVector =
+                                Icons.Outlined
+                                    .CheckCircle,
+                            contentDescription =
+                                null,
+                            tint =
+                                VerdeResolver
                         )
 
                         Spacer(
-                            modifier = Modifier.width(10.dp)
+                            modifier =
+                                Modifier.width(10.dp)
                         )
 
                         Text(
-                            text = "Evidencia de resolución",
+                            text =
+                                "Evidencia de resolución",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = NegroResolver
+                            fontWeight =
+                                FontWeight.ExtraBold,
+                            color =
+                                NegroResolver
                         )
                     }
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        modifier =
+                            Modifier.height(8.dp)
                     )
 
                     Text(
-                        text = "Antes de cambiar el estado a Resuelto, toma una fotografía del bache ya reparado.",
+                        text =
+                            "Toma una fotografía del bache reparado. " +
+                                "La evidencia se guardará en el servidor.",
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
-                        color = GrisResolver
+                        color =
+                            GrisResolver
                     )
                 }
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color.White
+                    ),
+                elevation =
+                    CardDefaults.cardElevation(
+                        defaultElevation =
+                            4.dp
+                    )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier =
+                        Modifier.padding(18.dp),
+                    verticalArrangement =
+                        Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Fotografía original",
+                        text =
+                            "Fotografía original",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NegroResolver
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            NegroResolver
                     )
 
-                    val fotoOriginal = reporte?.fotoUrl.orEmpty()
+                    val fotoOriginal =
+                        reporte
+                            ?.fotoUrl
+                            .orEmpty()
 
-                    if (fotoOriginal.isNotBlank()) {
+                    if (
+                        fotoOriginal
+                            .isNotBlank()
+                    ) {
                         Image(
-                            painter = rememberAsyncImagePainter(
-                                model = completarUrlFotoResolver(fotoOriginal)
-                            ),
-                            contentDescription = "Fotografía original del reporte",
+                            painter =
+                                rememberAsyncImagePainter(
+                                    model =
+                                        ApiClient
+                                            .urlCompleta(
+                                                fotoOriginal
+                                            )
+                                ),
+                            contentDescription =
+                                "Fotografía original",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(210.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
+                                .clip(
+                                    RoundedCornerShape(
+                                        16.dp
+                                    )
+                                ),
+                            contentScale =
+                                ContentScale.Crop
                         )
                     } else {
                         Box(
@@ -285,24 +359,46 @@ actual fun PantallaResolverBache(
                                 .fillMaxWidth()
                                 .height(120.dp)
                                 .background(
-                                    color = Color(0xFFF0F2F4),
-                                    shape = RoundedCornerShape(16.dp)
+                                    color =
+                                        Color(
+                                            0xFFF0F2F4
+                                        ),
+                                    shape =
+                                        RoundedCornerShape(
+                                            16.dp
+                                        )
                                 ),
-                            contentAlignment = Alignment.Center
+                            contentAlignment =
+                                Alignment.Center
                         ) {
                             Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                horizontalAlignment =
+                                    Alignment.CenterHorizontally
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.ImageNotSupported,
-                                    contentDescription = null,
-                                    tint = GrisResolver
+                                    imageVector =
+                                        Icons.Outlined
+                                            .ImageNotSupported,
+                                    contentDescription =
+                                        null,
+                                    tint =
+                                        GrisResolver
                                 )
-                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Spacer(
+                                    modifier =
+                                        Modifier.height(
+                                            6.dp
+                                        )
+                                )
+
                                 Text(
-                                    text = "Sin vista previa disponible",
-                                    color = GrisResolver,
-                                    fontSize = 13.sp
+                                    text =
+                                        "Sin fotografía original",
+                                    color =
+                                        GrisResolver,
+                                    fontSize =
+                                        13.sp
                                 )
                             }
                         }
@@ -311,61 +407,96 @@ actual fun PantallaResolverBache(
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color.White
+                    ),
+                elevation =
+                    CardDefaults.cardElevation(
+                        defaultElevation =
+                            4.dp
+                    )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(13.dp)
+                    modifier =
+                        Modifier.padding(18.dp),
+                    verticalArrangement =
+                        Arrangement.spacedBy(13.dp)
                 ) {
+
                     Text(
-                        text = "Fotografía del bache reparado",
+                        text =
+                            "Fotografía del bache reparado",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NegroResolver
+                        fontWeight =
+                            FontWeight.Bold,
+                        color =
+                            NegroResolver
                     )
 
                     if (fotoUri != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(
-                                model = fotoUri
-                            ),
-                            contentDescription = "Evidencia de resolución",
+                            painter =
+                                rememberAsyncImagePainter(
+                                    model =
+                                        fotoUri
+                                ),
+                            contentDescription =
+                                "Evidencia de resolución",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(250.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
+                                .clip(
+                                    RoundedCornerShape(
+                                        16.dp
+                                    )
+                                ),
+                            contentScale =
+                                ContentScale.Crop
                         )
 
                         OutlinedButton(
                             onClick = {
                                 abrirCamaraConPermiso()
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !guardando,
-                            shape = RoundedCornerShape(14.dp)
+                            modifier =
+                                Modifier.fillMaxWidth(),
+                            enabled =
+                                !guardando,
+                            shape =
+                                RoundedCornerShape(
+                                    14.dp
+                                )
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.CameraAlt,
-                                contentDescription = null,
-                                tint = NegroResolver
+                                imageVector =
+                                    Icons.Outlined
+                                        .CameraAlt,
+                                contentDescription =
+                                    null,
+                                tint =
+                                    NegroResolver
                             )
 
                             Spacer(
-                                modifier = Modifier.width(8.dp)
+                                modifier =
+                                    Modifier.width(
+                                        8.dp
+                                    )
                             )
 
                             Text(
-                                text = "Tomar otra fotografía",
-                                color = NegroResolver,
-                                fontWeight = FontWeight.SemiBold
+                                text =
+                                    "Tomar otra fotografía",
+                                color =
+                                    NegroResolver,
+                                fontWeight =
+                                    FontWeight.SemiBold
                             )
                         }
                     } else {
@@ -374,30 +505,52 @@ actual fun PantallaResolverBache(
                                 .fillMaxWidth()
                                 .height(150.dp)
                                 .background(
-                                    color = Color(0xFFFFFAE8),
-                                    shape = RoundedCornerShape(16.dp)
+                                    color =
+                                        Color(
+                                            0xFFFFFAE8
+                                        ),
+                                    shape =
+                                        RoundedCornerShape(
+                                            16.dp
+                                        )
                                 ),
-                            contentAlignment = Alignment.Center
+                            contentAlignment =
+                                Alignment.Center
                         ) {
                             Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                horizontalAlignment =
+                                    Alignment.CenterHorizontally
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.CameraAlt,
-                                    contentDescription = null,
-                                    tint = AmarilloOscuroResolver,
-                                    modifier = Modifier.size(42.dp)
+                                    imageVector =
+                                        Icons.Outlined
+                                            .CameraAlt,
+                                    contentDescription =
+                                        null,
+                                    tint =
+                                        AmarilloOscuroResolver,
+                                    modifier =
+                                        Modifier.size(
+                                            42.dp
+                                        )
                                 )
 
                                 Spacer(
-                                    modifier = Modifier.height(8.dp)
+                                    modifier =
+                                        Modifier.height(
+                                            8.dp
+                                        )
                                 )
 
                                 Text(
-                                    text = "La evidencia fotográfica es obligatoria",
-                                    color = GrisResolver,
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center
+                                    text =
+                                        "La evidencia fotográfica es obligatoria",
+                                    color =
+                                        GrisResolver,
+                                    fontSize =
+                                        13.sp,
+                                    textAlign =
+                                        TextAlign.Center
                                 )
                             }
                         }
@@ -409,25 +562,41 @@ actual fun PantallaResolverBache(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(54.dp),
-                            enabled = !guardando,
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = AmarilloResolver,
-                                contentColor = NegroResolver
-                            )
+                            enabled =
+                                !guardando,
+                            shape =
+                                RoundedCornerShape(
+                                    14.dp
+                                ),
+                            colors =
+                                ButtonDefaults
+                                    .buttonColors(
+                                        containerColor =
+                                            AmarilloResolver,
+                                        contentColor =
+                                            NegroResolver
+                                    )
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.CameraAlt,
-                                contentDescription = null
+                                imageVector =
+                                    Icons.Outlined
+                                        .CameraAlt,
+                                contentDescription =
+                                    null
                             )
 
                             Spacer(
-                                modifier = Modifier.width(8.dp)
+                                modifier =
+                                    Modifier.width(
+                                        8.dp
+                                    )
                             )
 
                             Text(
-                                text = "Tomar fotografía",
-                                fontWeight = FontWeight.Bold
+                                text =
+                                    "Tomar fotografía",
+                                fontWeight =
+                                    FontWeight.Bold
                             )
                         }
                     }
@@ -435,101 +604,146 @@ actual fun PantallaResolverBache(
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color.White
+                    ),
+                elevation =
+                    CardDefaults.cardElevation(
+                        defaultElevation =
+                            4.dp
+                    )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp)
+                    modifier =
+                        Modifier.padding(18.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment =
+                            Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Description,
-                            contentDescription = null,
-                            tint = AmarilloOscuroResolver
+                            imageVector =
+                                Icons.Outlined
+                                    .Description,
+                            contentDescription =
+                                null,
+                            tint =
+                                AmarilloOscuroResolver
                         )
 
                         Spacer(
-                            modifier = Modifier.width(8.dp)
+                            modifier =
+                                Modifier.width(8.dp)
                         )
 
                         Text(
-                            text = "Observación",
-                            fontWeight = FontWeight.Bold,
-                            color = NegroResolver
+                            text =
+                                "Observación",
+                            fontWeight =
+                                FontWeight.Bold,
+                            color =
+                                NegroResolver
                         )
                     }
 
                     Spacer(
-                        modifier = Modifier.height(12.dp)
+                        modifier =
+                            Modifier.height(12.dp)
                     )
 
                     OutlinedTextField(
-                        value = comentario,
+                        value =
+                            comentario,
                         onValueChange = {
                             comentario = it
                             error = ""
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier =
+                            Modifier.fillMaxWidth(),
                         minLines = 4,
                         maxLines = 6,
                         placeholder = {
                             Text(
-                                text = "Ejemplo: Se reparó la superficie y la vialidad quedó nivelada."
+                                text =
+                                    "Ejemplo: Se reparó la superficie y la vialidad quedó nivelada."
                             )
                         },
-                        enabled = !guardando,
-                        shape = RoundedCornerShape(14.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = AmarilloOscuroResolver
-                        )
+                        enabled =
+                            !guardando,
+                        shape =
+                            RoundedCornerShape(
+                                14.dp
+                            ),
+                        colors =
+                            OutlinedTextFieldDefaults
+                                .colors(
+                                    focusedBorderColor =
+                                        AmarilloOscuroResolver
+                                )
                     )
 
                     Spacer(
-                        modifier = Modifier.height(6.dp)
+                        modifier =
+                            Modifier.height(6.dp)
                     )
 
                     Text(
-                        text = "La observación es opcional.",
-                        fontSize = 12.sp,
-                        color = GrisResolver
+                        text =
+                            "La observación es opcional.",
+                        fontSize =
+                            12.sp,
+                        color =
+                            GrisResolver
                     )
                 }
             }
 
             if (error.isNotBlank()) {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = RojoClaroResolver
-                    )
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    shape =
+                        RoundedCornerShape(14.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                RojoClaroResolver
+                        )
                 ) {
                     Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier.padding(14.dp),
+                        verticalAlignment =
+                            Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.ErrorOutline,
-                            contentDescription = null,
-                            tint = RojoResolver
+                            imageVector =
+                                Icons.Outlined
+                                    .ErrorOutline,
+                            contentDescription =
+                                null,
+                            tint =
+                                RojoResolver
                         )
 
                         Spacer(
-                            modifier = Modifier.width(8.dp)
+                            modifier =
+                                Modifier.width(8.dp)
                         )
 
                         Text(
-                            text = error,
-                            color = RojoResolver,
-                            fontSize = 13.sp
+                            text =
+                                error,
+                            color =
+                                RojoResolver,
+                            fontSize =
+                                13.sp
                         )
                     }
                 }
@@ -539,159 +753,226 @@ actual fun PantallaResolverBache(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(
+                            vertical = 12.dp
+                        ),
+                    contentAlignment =
+                        Alignment.Center
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator(
-                            color = VerdeResolver
+                            color =
+                                VerdeResolver
                         )
 
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier =
+                                Modifier.height(
+                                    10.dp
+                                )
                         )
 
                         Text(
-                            text = "Guardando evidencia...",
-                            color = GrisResolver
+                            text =
+                                "Guardando evidencia...",
+                            color =
+                                GrisResolver
                         )
                     }
                 }
             } else {
                 Button(
                     onClick = {
-                        val uri = fotoUri
+                        val uri =
+                            fotoUri
 
                         if (uri == null) {
-                            error = "Debes tomar una fotografía del bache reparado."
+                            error =
+                                "Debes tomar una fotografía del bache reparado."
                             return@Button
                         }
 
                         scope.launch {
-                            guardando = true
+                            guardando =
+                                true
+
                             error = ""
 
                             try {
-                                val bytes = context
-                                    .contentResolver
-                                    .openInputStream(uri)
-                                    ?.use { inputStream ->
-                                        inputStream.readBytes()
-                                    }
-                                    ?: throw IllegalStateException(
-                                        "No fue posible leer la fotografía."
+                                val bytes =
+                                    context
+                                        .contentResolver
+                                        .openInputStream(
+                                            uri
+                                        )
+                                        ?.use {
+                                                inputStream ->
+                                            inputStream
+                                                .readBytes()
+                                        }
+                                        ?: throw IllegalStateException(
+                                            "No fue posible leer la fotografía."
+                                        )
+
+                                /*
+                                 * 1) Sube la foto usando el endpoint
+                                 *    corregido por tu compañera.
+                                 */
+                                val urlFotoResolucion =
+                                    ApiClient.subirFoto(
+                                        bytes =
+                                            bytes,
+                                        nombreArchivo =
+                                            "resuelto_${bacheId}_${System.currentTimeMillis()}.jpg"
                                     )
 
-                                val urlFotoResolucion = ApiClient.subirFoto(
-                                    bytes = bytes,
-                                    nombreArchivo =
-                                        "resuelto_${bacheId}_${System.currentTimeMillis()}.jpg"
-                                )
+                                /*
+                                 * 2) Guarda evidencia + comentario +
+                                 *    fecha en PostgreSQL y cambia a
+                                 *    RESUELTO en una sola operación.
+                                 */
+                                val resultado =
+                                    ApiClient.resolverBache(
+                                        id =
+                                            bacheId,
+                                        fotoResolucionUrl =
+                                            urlFotoResolucion,
+                                        comentarioResolucion =
+                                            comentario
+                                                .trim()
+                                    )
 
-                                ApiClient.actualizarEstado(
-                                    id = bacheId,
-                                    estado = "resuelto"
-                                )
+                                if (
+                                    resultado
+                                        .fotoResolucionUrl
+                                        .isBlank()
+                                ) {
+                                    throw IllegalStateException(
+                                        "El reporte se resolvió, pero el servidor no devolvió la evidencia."
+                                    )
+                                }
 
-                                val reporteGuardado =
-                                    ApiClient.obtenerBachePorId(bacheId)
+                                /*
+                                 * 3) Verificación final contra Railway.
+                                 */
+                                val verificacion =
+                                    ApiClient
+                                        .obtenerBachePorId(
+                                            bacheId
+                                        )
 
-                                val estadoGuardado = reporteGuardado.estado
-                                    .trim()
-                                    .lowercase()
-                                    .replace("_", " ")
+                                val estadoVerificado =
+                                    verificacion
+                                        .estado
+                                        .trim()
+                                        .lowercase()
+                                        .replace(
+                                            " ",
+                                            "_"
+                                        )
 
-                                if (estadoGuardado != "resuelto") {
+                                if (
+                                    estadoVerificado !=
+                                    "resuelto"
+                                ) {
                                     throw IllegalStateException(
                                         "El servidor respondió, pero el estado no quedó guardado como resuelto."
                                     )
                                 }
 
-                                val fecha = SimpleDateFormat(
-                                    "dd/MM/yyyy HH:mm",
-                                    Locale.getDefault()
-                                ).format(Date())
-
-                                guardarEvidenciaResolucionLocal(
-                                    context = context,
-                                    bacheId = bacheId,
-                                    fotoUrl = urlFotoResolucion,
-                                    comentario = comentario.trim(),
-                                    fecha = fecha
-                                )
+                                if (
+                                    verificacion
+                                        .fotoResolucionUrl
+                                        .isBlank()
+                                ) {
+                                    throw IllegalStateException(
+                                        "El servidor respondió, pero la fotografía de resolución no quedó guardada."
+                                    )
+                                }
 
                                 onResolucionExitosa()
-                            } catch (e: Exception) {
-                                error = "No fue posible resolver el reporte: ${
-                                    e.message ?: "Error desconocido"
-                                }"
+
+                            } catch (
+                                e: Exception
+                            ) {
+                                error =
+                                    "No fue posible resolver el reporte: " +
+                                        (
+                                            e.message
+                                                ?: "Error desconocido"
+                                        )
                             } finally {
-                                guardando = false
+                                guardando =
+                                    false
                             }
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(58.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = VerdeResolver,
-                        contentColor = Color.White
-                    )
+                    shape =
+                        RoundedCornerShape(
+                            16.dp
+                        ),
+                    colors =
+                        ButtonDefaults
+                            .buttonColors(
+                                containerColor =
+                                    VerdeResolver,
+                                contentColor =
+                                    Color.White
+                            )
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.CheckCircle,
-                        contentDescription = null
+                        imageVector =
+                            Icons.Outlined
+                                .CheckCircle,
+                        contentDescription =
+                            null
                     )
 
                     Spacer(
-                        modifier = Modifier.width(9.dp)
+                        modifier =
+                            Modifier.width(9.dp)
                     )
 
                     Text(
-                        text = "Guardar evidencia y resolver",
-                        fontWeight = FontWeight.ExtraBold
+                        text =
+                            "Guardar evidencia y resolver",
+                        fontWeight =
+                            FontWeight.ExtraBold
                     )
                 }
 
                 OutlinedButton(
-                    onClick = onVolver,
+                    onClick =
+                        onVolver,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
-                    shape = RoundedCornerShape(16.dp)
+                    shape =
+                        RoundedCornerShape(
+                            16.dp
+                        )
                 ) {
                     Text(
-                        text = "Cancelar",
-                        color = NegroResolver,
-                        fontWeight = FontWeight.Bold
+                        text =
+                            "Cancelar",
+                        color =
+                            NegroResolver,
+                        fontWeight =
+                            FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(
+                modifier =
+                    Modifier.height(12.dp)
+            )
         }
     }
-}
-
-private fun completarUrlFotoResolver(
-    fotoUrl: String
-): String {
-    if (fotoUrl.isBlank()) {
-        return ""
-    }
-
-    if (fotoUrl.startsWith("http", ignoreCase = true)) {
-        return fotoUrl
-    }
-
-    val ruta = if (fotoUrl.startsWith("/")) {
-        fotoUrl
-    } else {
-        "/$fotoUrl"
-    }
-
-    return "https://backend-production-ad16.up.railway.app$ruta"
 }

@@ -13,7 +13,7 @@ data class Bache(
     val estado: String = "pendiente",
     val usuarioId: Int = 0,
 
-    // Evidencia cuando el administrador resuelve el bache
+    // Evidencia de resolución guardada por el backend
     val fotoResolucionUrl: String = "",
     val comentarioResolucion: String = "",
     val fechaResolucion: String = ""
@@ -44,4 +44,10 @@ data class CrearBacheRequest(
     val longitud: Double,
     val fotoUrl: String = "",
     val usuarioId: Int = 0
+)
+
+@Serializable
+data class ResolverBacheRequest(
+    val fotoResolucionUrl: String,
+    val comentarioResolucion: String = ""
 )
