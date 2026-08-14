@@ -68,7 +68,8 @@ private val RojoDetalleAdmin = Color(0xFFB3261E)
 @Composable
 fun PantallaDetalleAdmin(
     bacheId: Int,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onResolverBache: (Int) -> Unit
 ) {
     var bache by remember {
         mutableStateOf<Bache?>(null)
@@ -519,7 +520,13 @@ fun PantallaDetalleAdmin(
                                     },
                                     habilitado = !actualizandoEstado,
                                     onClick = {
-                                        cambiarEstado("resuelto")
+                                        val yaEstaResuelto = reporte.estado
+                                            .trim()
+                                            .lowercase() == "resuelto"
+
+                                        if (!yaEstaResuelto) {
+                                            onResolverBache(bacheId)
+                                        }
                                     }
                                 )
 

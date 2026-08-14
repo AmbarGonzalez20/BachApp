@@ -1,8 +1,10 @@
 package com.example.bachapp
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -58,10 +60,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 /*
- * Colores generales de BachApp.
- *
- * Estos nombres se conservan porque posiblemente también se utilizan
- * en otras pantallas de tu aplicación.
+ * Se conservan estos nombres porque otras pantallas pueden utilizarlos.
  */
 val AzulClaro = Color(0xFFFFF4C7)
 val AzulOscuro = Color(0xFF252525)
@@ -69,9 +68,6 @@ val VerdeBoton = Color(0xFFFFC107)
 val CafeBoton = Color(0xFFE5A900)
 val FondoPantalla = Color(0xFFF5F6F8)
 
-/*
- * Colores específicos del login.
- */
 private val AmarilloPrincipalLogin = Color(0xFFFFC107)
 private val AmarilloOscuroLogin = Color(0xFFE5A900)
 private val AmarilloClaroLogin = Color(0xFFFFF4C7)
@@ -87,68 +83,56 @@ fun PantallaLogin(
     onLoginExitoso: (LoginResponse) -> Unit,
     onIrARegistro: () -> Unit
 ) {
-
-    var email by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var mostrarPassword by remember {
-        mutableStateOf(false)
-    }
-
-    var cargando by remember {
-        mutableStateOf(false)
-    }
-
-    var error by remember {
-        mutableStateOf("")
-    }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var mostrarPassword by remember { mutableStateOf(false) }
+    var cargando by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
-
-    /*
-     * Se conserva el autenticador biométrico que ya tienes creado.
-     */
     val biometricAuthenticator = rememberBiometricAuthenticator()
 
     Scaffold(
         containerColor = FondoPantalla
     ) { paddingValues ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-
             /*
-             * Imagen superior.
+             * IMPORTANTE:
+             * ContentScale.Fit evita que el logo BachApp se recorte.
              */
-            Image(
-                painter = painterResource(
-                    Res.drawable.login_banner
-                ),
-                contentDescription = "Imagen principal de BachApp",
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(275.dp)
+                    .height(215.dp)
                     .clip(
                         RoundedCornerShape(
                             bottomStart = 30.dp,
                             bottomEnd = 30.dp
                         )
+                    )
+                    .background(Color.White)
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 8.dp
                     ),
-                contentScale = ContentScale.Crop
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(
+                        Res.drawable.login_banner
+                    ),
+                    contentDescription = "Logo principal de BachApp",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            }
 
-            Spacer(
-                modifier = Modifier.height(20.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             Card(
                 modifier = Modifier
@@ -169,10 +153,6 @@ fun PantallaLogin(
                     ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                    /*
-                     * Etiqueta amarilla superior.
-                     */
                     Card(
                         shape = RoundedCornerShape(50.dp),
                         colors = CardDefaults.cardColors(
@@ -192,9 +172,7 @@ fun PantallaLogin(
                         )
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(18.dp)
-                    )
+                    Spacer(modifier = Modifier.height(18.dp))
 
                     Text(
                         text = "Bienvenido",
@@ -203,9 +181,7 @@ fun PantallaLogin(
                         color = NegroLogin
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(7.dp)
-                    )
+                    Spacer(modifier = Modifier.height(7.dp))
 
                     Text(
                         text = "Ingresa tus datos para consultar o registrar reportes de baches.",
@@ -216,27 +192,18 @@ fun PantallaLogin(
                         color = GrisTextoLogin
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(27.dp)
-                    )
+                    Spacer(modifier = Modifier.height(27.dp))
 
-                    /*
-                     * Correo electrónico.
-                     */
                     OutlinedTextField(
                         value = email,
                         onValueChange = { nuevoEmail ->
-                            email = nuevoEmail.trim()
+                            email = nuevoEmail
                             error = ""
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
-                        label = {
-                            Text("Correo electrónico")
-                        },
-                        placeholder = {
-                            Text("nombre@correo.com")
-                        },
+                        label = { Text("Correo electrónico") },
+                        placeholder = { Text("nombre@correo.com") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Email,
@@ -255,21 +222,14 @@ fun PantallaLogin(
                             focusedLabelColor = AmarilloOscuroLogin,
                             unfocusedLabelColor = GrisTextoLogin,
                             cursorColor = AmarilloOscuroLogin,
-                            focusedLeadingIconColor = AmarilloOscuroLogin,
-                            unfocusedLeadingIconColor = GrisTextoLogin,
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
                             disabledContainerColor = Color.White
                         )
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(18.dp)
-                    )
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    /*
-                     * Contraseña.
-                     */
                     OutlinedTextField(
                         value = password,
                         onValueChange = { nuevaPassword ->
@@ -278,12 +238,8 @@ fun PantallaLogin(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
-                        label = {
-                            Text("Contraseña")
-                        },
-                        placeholder = {
-                            Text("Ingresa tu contraseña")
-                        },
+                        label = { Text("Contraseña") },
+                        placeholder = { Text("Ingresa tu contraseña") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Lock,
@@ -329,21 +285,14 @@ fun PantallaLogin(
                             focusedLabelColor = AmarilloOscuroLogin,
                             unfocusedLabelColor = GrisTextoLogin,
                             cursorColor = AmarilloOscuroLogin,
-                            focusedLeadingIconColor = AmarilloOscuroLogin,
-                            unfocusedLeadingIconColor = GrisTextoLogin,
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
                             disabledContainerColor = Color.White
                         )
                     )
 
-                    /*
-                     * Mensaje de error.
-                     */
                     if (error.isNotBlank()) {
-                        Spacer(
-                            modifier = Modifier.height(14.dp)
-                        )
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -365,59 +314,44 @@ fun PantallaLogin(
                         }
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(25.dp)
-                    )
+                    Spacer(modifier = Modifier.height(25.dp))
 
-                    /*
-                     * Botón para iniciar sesión.
-                     */
                     Button(
                         onClick = {
+                            val correoLimpio = email.trim()
 
                             when {
-                                email.isBlank() -> {
-                                    error =
-                                        "El correo electrónico es obligatorio."
+                                correoLimpio.isBlank() -> {
+                                    error = "El correo electrónico es obligatorio."
                                 }
 
-                                !email.contains("@") ||
-                                        !email.contains(".") -> {
-                                    error =
-                                        "Ingresa un correo electrónico válido."
+                                !correoLimpio.contains("@") ||
+                                    !correoLimpio.contains(".") -> {
+                                    error = "Ingresa un correo electrónico válido."
                                 }
 
                                 password.isBlank() -> {
-                                    error =
-                                        "La contraseña es obligatoria."
+                                    error = "La contraseña es obligatoria."
                                 }
 
                                 password.length < 6 -> {
-                                    error =
-                                        "La contraseña debe tener al menos 6 caracteres."
+                                    error = "La contraseña debe tener al menos 6 caracteres."
                                 }
 
                                 else -> {
                                     cargando = true
                                     error = ""
 
-                                    /*
-                                     * Primero comprobamos el usuario con el backend.
-                                     */
                                     scope.launch {
                                         try {
-                                            cargando = true
-                                            error = ""
-
                                             val esAdministrador =
-                                                email.equals(
+                                                correoLimpio.equals(
                                                     "admin@bachapp.com",
                                                     ignoreCase = true
                                                 ) &&
-                                                        password == "admin123"
+                                                    password == "admin123"
 
                                             if (esAdministrador) {
-
                                                 val administrador = LoginResponse(
                                                     id = -1,
                                                     nombre = "Administrador",
@@ -437,11 +371,9 @@ fun PantallaLogin(
                                                         error = mensaje
                                                     }
                                                 )
-
                                             } else {
-
                                                 val respuesta = ApiClient.login(
-                                                    email = email,
+                                                    email = correoLimpio,
                                                     password = password
                                                 )
 
@@ -457,10 +389,11 @@ fun PantallaLogin(
                                                     }
                                                 )
                                             }
-
                                         } catch (e: Exception) {
                                             cargando = false
-                                            error = "Correo o contraseña incorrectos."
+                                            error = e.message
+                                                ?.takeIf { it.isNotBlank() }
+                                                ?: "No fue posible iniciar sesión."
                                         }
                                     }
                                 }
@@ -475,27 +408,18 @@ fun PantallaLogin(
                             containerColor = AmarilloPrincipalLogin,
                             contentColor = NegroLogin,
                             disabledContainerColor =
-                                AmarilloPrincipalLogin.copy(
-                                    alpha = 0.60f
-                                ),
+                                AmarilloPrincipalLogin.copy(alpha = 0.60f),
                             disabledContentColor =
-                                NegroLogin.copy(
-                                    alpha = 0.70f
-                                )
+                                NegroLogin.copy(alpha = 0.70f)
                         )
                     ) {
-
                         if (cargando) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(23.dp),
                                 color = NegroLogin,
                                 strokeWidth = 2.5.dp
                             )
-
-                            Spacer(
-                                modifier = Modifier.width(11.dp)
-                            )
-
+                            Spacer(modifier = Modifier.width(11.dp))
                             Text(
                                 text = "Verificando identidad",
                                 fontSize = 15.sp,
@@ -506,11 +430,7 @@ fun PantallaLogin(
                                 imageVector = Icons.Outlined.Login,
                                 contentDescription = null
                             )
-
-                            Spacer(
-                                modifier = Modifier.width(9.dp)
-                            )
-
+                            Spacer(modifier = Modifier.width(9.dp))
                             Text(
                                 text = "Iniciar sesión",
                                 fontSize = 16.sp,
@@ -519,21 +439,10 @@ fun PantallaLogin(
                         }
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(23.dp)
-                    )
+                    Spacer(modifier = Modifier.height(23.dp))
+                    HorizontalDivider(color = GrisDivisorLogin)
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    HorizontalDivider(
-                        color = GrisDivisorLogin
-                    )
-
-                    Spacer(
-                        modifier = Modifier.height(20.dp)
-                    )
-
-                    /*
-                     * Registro de nuevos usuarios.
-                     */
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -544,11 +453,7 @@ fun PantallaLogin(
                             color = GrisTextoLogin,
                             fontSize = 14.sp
                         )
-
-                        Spacer(
-                            modifier = Modifier.width(6.dp)
-                        )
-
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Regístrate",
                             color = AmarilloOscuroLogin,
@@ -562,9 +467,7 @@ fun PantallaLogin(
                         )
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(17.dp)
-                    )
+                    Spacer(modifier = Modifier.height(17.dp))
 
                     Text(
                         text = "Después de verificar tus credenciales, la aplicación solicitará la autenticación biométrica disponible en tu dispositivo.",
@@ -577,9 +480,7 @@ fun PantallaLogin(
                 }
             }
 
-            Spacer(
-                modifier = Modifier.height(32.dp)
-            )
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

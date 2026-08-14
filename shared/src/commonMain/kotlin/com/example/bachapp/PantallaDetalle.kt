@@ -94,6 +94,10 @@ fun PantallaDetalle(
         mutableStateOf("")
     }
 
+    val evidenciaLocal = recordarEvidenciaResolucionLocal(
+        bacheId = bacheId
+    )
+
     LaunchedEffect(bacheId) {
         cargando = true
         error = ""
@@ -196,6 +200,22 @@ fun PantallaDetalle(
                     val urlFoto = obtenerUrlFotoDetalle(
                         reporte.fotoUrl
                     )
+
+                    val fotoResolucion = obtenerUrlFotoDetalle(
+                        reporte.fotoResolucionUrl.ifBlank {
+                            evidenciaLocal?.fotoUrl.orEmpty()
+                        }
+                    )
+
+                    val comentarioResolucion =
+                        reporte.comentarioResolucion.ifBlank {
+                            evidenciaLocal?.comentario.orEmpty()
+                        }
+
+                    val fechaResolucion =
+                        reporte.fechaResolucion.ifBlank {
+                            evidenciaLocal?.fecha.orEmpty()
+                        }
 
                     Column(
                         modifier = Modifier
@@ -400,11 +420,34 @@ fun PantallaDetalle(
                                     }
                                 }
                             }
+                            /*
+                             * Seguimiento visual del reporte.
+                             * Reportado -> En proceso -> Resuelto.
+                             */
+                            SeguimientoReporte(
+                                estado = reporte.estado
+                            )
+
+                            if (
+                                reporte.estado
+                                    .trim()
+                                    .lowercase()
+                                    .replace("_", " ") == "resuelto" &&
+                                fotoResolucion.isNotBlank()
+                            ) {
+                                CardEvidenciaResolucionDetalle(
+                                    fotoAntes = urlFoto,
+                                    fotoDespues = fotoResolucion,
+                                    comentario = comentarioResolucion,
+                                    fecha = fechaResolucion
+                                )
+                            }
 
                             /*
                              * Descripción.
                              */
                             CardInformacionVial(
+
                                 titulo = "Descripción",
                                 icono = {
                                     Icon(
@@ -554,6 +597,417 @@ fun PantallaDetalle(
             }
         }
     }
+}
+
+
+@Composable
+private fun CardEvidenciaResolucionDetalle(
+    fotoAntes: String,
+    fotoDespues: String,
+    comentario: String,
+    fecha: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(
+                            color = VerdeClaroDetalle,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        tint = VerdeEstadoDetalle
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Column {
+                    Text(
+                        text = "Evidencia de resolución",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = NegroDetalle
+                    )
+
+                    Text(
+                        text = "Comparación antes y después",
+                        fontSize = 12.sp,
+                        color = GrisDetalle
+                    )
+                }
+            }
+
+            FotoComparacionDetalle(
+                etiqueta = "ANTES",
+                fotoUrl = fotoAntes
+            )
+
+            FotoComparacionDetalle(
+                etiqueta = "DESPUÉS",
+                fotoUrl = fotoDespues
+            )
+
+            if (comentario.isNotBlank()) {
+                Column {
+                    Text(
+                        text = "Observación de atención",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GrisDetalle
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = comentario,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        color = NegroDetalle
+                    )
+                }
+            }
+
+            if (fecha.isNotBlank()) {
+                Text(
+                    text = "Fecha de resolución: $fecha",
+                    fontSize = 12.sp,
+                    color = GrisDetalle
+                )
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = VerdeClaroDetalle
+                )
+            ) {
+                Text(
+                    text = "Tu reporte fue atendido correctamente. Gracias por contribuir a mejorar las vialidades de tu comunidad.",
+                    modifier = Modifier.padding(14.dp),
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp,
+                    color = VerdeEstadoDetalle,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FotoComparacionDetalle(
+    etiqueta: String,
+    fotoUrl: String
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = etiqueta,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = GrisDetalle
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        if (fotoUrl.isNotBlank()) {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = fotoUrl
+                ),
+                contentDescription = "Fotografía $etiqueta del reporte",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(230.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(110.dp)
+                    .background(
+                        color = Color(0xFFF0F2F4),
+                        shape = RoundedCornerShape(15.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.ImageNotSupported,
+                    contentDescription = null,
+                    tint = GrisDetalle
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SeguimientoReporte(
+    estado: String
+) {
+    val estadoNormalizado = estado
+        .trim()
+        .lowercase()
+        .replace("_", " ")
+
+    val pasoActual = when (estadoNormalizado) {
+        "resuelto" -> 3
+        "en proceso" -> 2
+        else -> 1
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Text(
+                text = "Seguimiento del reporte",
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = NegroDetalle,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
+
+            Text(
+                text = when (pasoActual) {
+                    1 -> "Tu reporte fue recibido y está pendiente de atención."
+                    2 -> "Tu reporte ya está siendo atendido."
+                    else -> "Tu reporte fue atendido y marcado como resuelto."
+                },
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                color = GrisDetalle,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(
+                modifier = Modifier.height(22.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                PasoSeguimiento(
+                    modifier = Modifier.weight(1f),
+                    numero = 1,
+                    titulo = "Reportado",
+                    activo = pasoActual >= 1,
+                    completado = pasoActual > 1
+                )
+
+                LineaSeguimiento(
+                    activa = pasoActual >= 2,
+                    modifier = Modifier
+                        .weight(0.55f)
+                        .padding(top = 17.dp)
+                )
+
+                PasoSeguimiento(
+                    modifier = Modifier.weight(1f),
+                    numero = 2,
+                    titulo = "En proceso",
+                    activo = pasoActual >= 2,
+                    completado = pasoActual > 2
+                )
+
+                LineaSeguimiento(
+                    activa = pasoActual >= 3,
+                    modifier = Modifier
+                        .weight(0.55f)
+                        .padding(top = 17.dp)
+                )
+
+                PasoSeguimiento(
+                    modifier = Modifier.weight(1f),
+                    numero = 3,
+                    titulo = "Resuelto",
+                    activo = pasoActual >= 3,
+                    completado = pasoActual >= 3
+                )
+            }
+
+            if (pasoActual == 3) {
+                Spacer(
+                    modifier = Modifier.height(18.dp)
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = VerdeClaroDetalle
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.CheckCircle,
+                            contentDescription = null,
+                            tint = VerdeEstadoDetalle,
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        Spacer(
+                            modifier = Modifier.width(10.dp)
+                        )
+
+                        Column {
+                            Text(
+                                text = "Reporte atendido",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = VerdeEstadoDetalle
+                            )
+
+                            Text(
+                                text = "Gracias por contribuir a mejorar las vialidades de tu comunidad.",
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp,
+                                color = GrisDetalle
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PasoSeguimiento(
+    modifier: Modifier,
+    numero: Int,
+    titulo: String,
+    activo: Boolean,
+    completado: Boolean
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(
+                    color = if (activo) {
+                        if (completado) {
+                            VerdeEstadoDetalle
+                        } else {
+                            AmarilloDetalle
+                        }
+                    } else {
+                        Color(0xFFE5E7E9)
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (completado) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            } else {
+                Text(
+                    text = numero.toString(),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (activo) {
+                        NegroDetalle
+                    } else {
+                        GrisDetalle
+                    }
+                )
+            }
+        }
+
+        Spacer(
+            modifier = Modifier.height(7.dp)
+        )
+
+        Text(
+            text = titulo,
+            modifier = Modifier.fillMaxWidth(),
+            fontSize = 11.sp,
+            fontWeight = if (activo) {
+                FontWeight.ExtraBold
+            } else {
+                FontWeight.Medium
+            },
+            color = if (activo) {
+                NegroDetalle
+            } else {
+                GrisDetalle
+            },
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun LineaSeguimiento(
+    activa: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(4.dp)
+            .background(
+                color = if (activa) {
+                    VerdeEstadoDetalle
+                } else {
+                    Color(0xFFE5E7E9)
+                },
+                shape = RoundedCornerShape(50.dp)
+            )
+    )
 }
 
 @Composable
